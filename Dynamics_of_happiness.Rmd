@@ -1,0 +1,324 @@
+---
+title: "Dynamics of Happiness"
+author: "Ankita Arvind Deshmukh"
+date: "05/12/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, include=FALSE}
+library(tidyverse)
+```
+## Introduction
+
+What is happiness, exactly? How do we quantify it? Can you purchase happiness with money? Is pleasure determined by freedom or social support? Is it possible to define health as happiness? While these are contentious concerns, let us attempt to address them using a data-driven method utilizing the World Happiness Report 2021. The World Happiness Report is a remarkable assessment of global happiness. Happiness indices are increasingly being used by governments, businesses, and civil society to influence policy decisions and illustrate how well-being evaluations may be used to analyze a country's progress. <br>
+
+## Data
+
+## <font size="4"> Data Source <br> </font> 
+Ajaypal Singh. "World Happiness Report 2021". kaggle.com <br>
+https://www.kaggle.com/ajaypalsinghlo/world-happiness-report-2021 (accessed Feb 17, 2022). <br>
+
+## <font size="4"> Data Collection <br> </font> 
+
+The happiness scores and rankings use data from the Gallup World Poll which adopted the “Cantril’s Ladder of Life Scale” as an assessment for well-being. Since 2012, Gallup's World Poll has published eight happiness reports. It asks of respondents: <br>
+"Please imagine a ladder with steps numbered from zero at the bottom to 10 at the top. The top of the ladder represents the best possible life for you and the bottom of the ladder represents the worst possible life for you. On which step of the ladder would you say you personally feel you stand at this time? (ladder-present) On which step do you think you will stand about five years from now? (ladder-future)" <br>
+
+## <font size="4"> Cases <br> </font> 
+
+The poll is conducted for 149 countries across the world. Each observation/row in a data set represents a country. <br>
+
+## <font size="4"> Variables <br> </font> 
+
+There are total 20 variables in a dataset. But for the pourpose of this analysis, we can focus only on following variables:<br>
+Ladder Score : Happiness Index (0 - 10) <br>
+Logged GDP per capita <br>
+Social support <br>
+Healthy life expectancy <br>
+Freedom to make life choices <br>
+Generosity <br>
+Perceptions of corruption <br>
+The author has created columns for a hypothetical country Dystopia, that has values equal to the world’s lowest national averages for each of the six factors. They have no impact on the total score reported for each country. Hence those columns  are not taken into consideration in this project. <br>
+
+## <font size="4"> Type of study <br> </font> 
+
+It is an observational study (poll).
+
+## <font size="4"> Data clean-up <br> </font> 
+
+Let's check for missing values and duplicated rows. <br>
+```{r Quality Check}
+
+world_happiness_report <- read.csv("world-happiness-report-2021.csv")
+sum(is.na(world_happiness_report))
+sum(duplicated(world_happiness_report))
+```
+
+There are no missing values and no duplicated observations.<br>
+Variable names (column names) contain white spaces, hence they can be renamed.<br>
+
+```{r Renaming variables}
+names(world_happiness_report) <- c("country", "region", "ladder_score", "std_error_ladder_score", "upeerwhisker", "lowerwhisker", "gdp_per_cpt", "social_support", "healthy_life_exp", "freedom",  "generosity", "corruption", "ladder_score_dystopia", "expl_gdp_per_cpt", "expl_social_support", "expl_healthy_life_exp", "expl_freedom",  "expl_generosity", "expl_corruption","dystopia_residual")
+```
+
+```{r Viewing column names again}
+names(world_happiness_report)
+```
+
+Filter the variables required for this project. <br>
+```{r Filtered dataset}
+happiness_report <- world_happiness_report %>% 
+select(country, region, ladder_score, gdp_per_cpt, social_support, healthy_life_exp, freedom, generosity, corruption)
+```
+
+Data clean-up is done. Let's work on this clean data now.<br>
+
+## Exploratory Data Analysis
+
+
+Let's visualize the correlation between various input variables and the happiness score (ladder score).
+## <font size="4"> Visualization <br> </font> 
+```{r gdp vs happiness score}
+ggplot(happiness_report, aes(x=gdp_per_cpt, y=ladder_score)) + 
+  geom_point(aes(color = region)) +
+  geom_smooth(method="lm") + 
+  xlab("GDP per Capita") + 
+  ylab("Happiness Score") + 
+  labs(colour="Region") +
+  ggtitle("All Regions: GDP per Capita & Happiness Score (2021)")
+```
+
+```{r correlation gdp and happiness score correlation}
+cor(happiness_report$gdp_per_cpt,happiness_report$ladder_score)
+```
+
+There is pretty high positive correlation between GDP per capita and the happiness score. <br>
+
+```{r social support vs happiness score}
+ggplot(happiness_report, aes(x= social_support, y=ladder_score)) + 
+  geom_point(aes(color = region)) +
+  geom_smooth(method="lm") + 
+  xlab("Social Support") + 
+  ylab("Happiness Score") + 
+  labs(colour="Region") +
+  ggtitle("All Regions: Social Support & Happiness Score (2021)")
+```
+```{r correlation social support and happiness score}
+cor(happiness_report$social_support,happiness_report$ladder_score)
+```
+
+Social support does impact the happiness score positively. <br>
+
+```{r Healthy Life Expectancy vs happiness score}
+ggplot(happiness_report, aes(x=healthy_life_exp, y=ladder_score)) + 
+  geom_point(aes(color = region)) +
+  geom_smooth(method="lm") + 
+  xlab("Healthy Life Expectancy") + 
+  ylab("Happiness Score") + 
+  labs(colour="Region") +
+  ggtitle("All Regions: Healthy Life Expectancy & Happiness Score (2021)")
+```
+
+```{r correlation  Healthy Life Expectancy and happiness score}
+cor(happiness_report$healthy_life_exp,happiness_report$ladder_score)
+```
+
+Happiness score seems to be improving with the health life expenctancy. <br>
+
+```{r freedom vs happiness score}
+ggplot(happiness_report, aes(x=freedom, y=ladder_score)) + 
+  geom_point(aes(color = region)) +
+  geom_smooth(method="lm") + 
+  xlab("Freedom to Make Choices") + 
+  ylab("Happiness Score") + 
+  labs(colour="Region") +
+  ggtitle("All Regions: Freedom to Make Life Choices & Happiness Score (2021)")
+```
+
+```{r correlation freedom and happiness score}
+cor(happiness_report$freedom,happiness_report$ladder_score)
+```
+There is some positive correlation between freedom to make life choices & happiness score too. <br>
+
+```{r correlation generosity corruption and happiness score}
+cor(happiness_report$generosity,happiness_report$ladder_score)
+cor(happiness_report$corruption,happiness_report$ladder_score)
+```
+
+
+Generosity and perception of corruption seem to have very less correlation with the happiness score. <br>
+
+## Principal Component Analysis
+
+```{r Filtered dataset for PCA}
+happiness_report_pca <- happiness_report %>% 
+select(gdp_per_cpt, social_support, healthy_life_exp, freedom, generosity, corruption)
+head(happiness_report_pca,3)
+```
+
+Let's find the correlation matrix. <br>
+```{r correlation_matrix}
+#Find correlation matrix
+cormat <- cor(happiness_report_pca)
+cormat <- round(cormat, digits = 3)
+cormat
+```
+
+Find eigen values and eigen vectors.<br>
+```{r eigen1}
+ev <- eigen(cormat)
+#Finding eigen values
+(values <- ev$values)
+#Finding eigen vector
+(vector <- ev$vectors)
+```
+
+Find percentage of variance explained. <br>
+```{r PVE1}
+#Percent variance explained
+PVE <- values / sum(values)
+PVE
+#Cumulative percent variance explained
+cumsum(PVE)
+```
+
+```{r Scree__PVE1}
+plot(PVE, xlab = "Principal Component",
+     ylab = "Proportion of Variance Explained",
+     type = "b")
+```
+ˇ
+```{r Scree__CPVE1}
+plot(cumsum(PVE), xlab = "Principal Component",
+     ylab = "Proportion of Variance Explained",
+     type = "b")
+```
+
+From the calculations and charts above, it can be said that the first three components explain ~85% of the variability in the data. Hence dimensions of the matrix can be reduced at the cost of remaining ~15% variability. <br>
+
+```{r evecs1}
+evecs = vector[,1:3]
+colnames(evecs) = c("e1", "e2", "e3")
+row.names(evecs) = colnames(happiness_report_pca)
+evecs
+```
+
+From the matrix above, GDP and healthy life expectancy seem to dominate the first principal component. Second principal components seems be dominated by generosity. Third component is highly dominated by corruption. Let's find scaled principal components. We will use this later to perform multiple linear regression.<br>
+
+```{r PCA1}
+PC1_t <- as.matrix(scale(happiness_report_pca)) %*% evecs[,1]
+PC2_t <- as.matrix(scale(happiness_report_pca)) %*% evecs[,2]
+PC3_t <- as.matrix(scale(happiness_report_pca)) %*% evecs[,3]
+#PC4_t <- as.matrix(scale(happiness_report_pca)) %*% evecs1[,4]
+PC_t  <- data.frame(PC1_t, PC2_t, PC3_t)
+PC_t["Country"] <- happiness_report["country"]
+head(PC_t,3)
+```
+
+
+## Hypothesis testing:
+## <font size="4"> Hypothesis 1 <br> </font> 
+Most of the countries in Western Europe, North America and ANZ (call it group North) are well-developed but there is a huge diversity in terms of income in Asian, African and Middle East countries (call it group South). Let's check if variance of happiness index in group South is greater than that of group North. <br>
+σ2n = Variance of happiness index in group North <br>
+σ2s = Variance of happiness index in group South <br>
+H0: σ2s = σ2n <br>
+HA: σ2s > σ2n <br>
+
+## <font size="4"> Test Statistic <br> </font> 
+
+Variance of happiness index between group North and group South. <br>
+
+## <font size="4"> Reference Distribution <br> </font> 
+
+F-distribution can be used to make an inference on the Variances of two normal distribution because:<br>
+1) Poll is taken from different individuals from different contries, hence the sample is independent.<br>
+2) There is no clear outlier in the happiness index variable of either groups, the values are normally distributed.<br>
+
+```{r subsetN}
+grpNorth <- subset(happiness_report, happiness_report$region == "Western Europe" | happiness_report$region == "North America and ANZ")
+head(grpNorth,3)
+```
+
+```{r subsetA}
+grpSouth <- subset(happiness_report, happiness_report$region == "South Asia" | happiness_report$region == "Sub-Saharan Africa" | happiness_report$region == "Middle East and North Africa")
+head(grpSouth, 3)
+```
+
+```{r test statistic}
+var.test(grpNorth$ladder_score, grpSouth$ladder_score, alternative = "two.sided")
+```
+
+The p-value of F-test is 0.06284 which is greater than the significance level 0.05. In conclusion, there is no significant difference between the two variances. Hence we fail to reject the NULL hypothesis H0: σ2a = σ2n.<br>
+
+## <font size="4"> Hypothesis 2 <br> </font> 
+Lets' verify if mean happiness index in group North is greater than that of group south.<br>
+μe: mean happiness index of group North <br>
+μa: mean happiness index of group South <br>
+H0: μn - μs = 0 <br>
+HA: μn - μs > 0 <br>
+
+## <font size="4"> Test Statistic <br> </font> 
+
+Difference in the sample means of happiness score between group North and group South in 2021. <br>
+
+## <font size="4"> Reference Distribution <br> </font> 
+
+When small samples are taken, we assume that the populations are normally distributed and base our hypotheses tests on the t distribution. In this example, t-distribution can be used to make an inference because:<br>
+1)	Poll is taken from different individuals from different contries, hence the sample is independent.<br>
+2)	There is no clear outlier in the ‘happiness index’ variable of either groups, the values are normally distributed.<br>
+
+Since we failed to reject the null hypothesis in Hypothesis 1, we can perform pooled-t-test for hypothesis stated in Hypothesis 2.<br>
+
+```{r t-test}
+t.test(grpNorth$ladder_score, grpSouth$ladder_score, alternative = "greater", paired = FALSE, var.equal = TRUE, conf.level = 0.95)
+``` 
+
+Since p-value is less than 0.05, we reject null hypothesis. Hence we can say that group North has higher happiness index than that of group South in 2021.<br>
+
+## Multiple Regression
+
+Since our model has more than one predictor variable and one response, we can use multiple regression model <br>
+Y =β0 + β1𝑋1 + β2𝑋2 + βk𝑋k + 𝜖<br>
+
+```{r model}
+model <- lm(happiness_report$ladder_score~happiness_report$gdp_per_cpt+happiness_report$social_support+happiness_report$healthy_life_exp+happiness_report$freedom+happiness_report$generosity+happiness_report$corruption)
+summary(model)
+```
+
+F-statistic is a good indicator of whether there is a relationship between our predictor and the response variables. The further the F-statistic is from 1 the better it is. In our example the F-statistic is 73.27 which is relatively larger than 1 given the size of our data. <br>
+
+It can also be seen that p-value is < 2.2e-16, which is highly significant. This means that, at least, one of the predictor variables is significantly related to the outcome variable. From the coefficients table, it seems that Social support and freedom are the most significant attributes.
+
+'R-squared' is an important measures of how well our model predicts the desired response variable which is equal to 0.7558 in our case. This value means that combination of GDP per capita, social support, healthy life expectancy, freedom of expression, generosity and corruption explain 75.58% of the variability in 'happiness score'. 
+
+Let's also see if fitting a model based on PCA makes a difference since the dimension are reduced. <br>
+```{r pca model}
+pca_model <- lm(happiness_report$ladder_score~PC1_t+PC2_t+PC3_t)
+summary(pca_model)
+confint(pca_model)
+```
+The R-squared value remains almost same but the value of F-statistic has notably increased. <br>
+
+```{r residual1}
+par(mfrow = c(2,2))
+plot(pca_model)
+```
+
+Graph 1 is called as fitted vs residual plot. The red line is quite flat, in fact, the points are compact and look like a cloud of points. Hence linearity assumptions is met.<br>
+Graph 2 is known as QQ plot. The Y-axis is ordered, observed and standardized residuals. X-axis has ordered theoretical residuals. The points should fall roughly on the diagonal line and they do. Hence the assumption about the normal distribution of errors is also met. <br>
+Graph 3 and 4 also indicate linearity and almost constant variance. <br>
+
+## Conclusion:
+Multiple linear regression suggests that family support and freedom of expression are the most important factors to consider when determining happiness. Despite the numerous disagreements, it appears that happiness is also strongly linked to wealth. Nations with high happiness scores are also economically prosperous. Even though it is not mentioned in this survey, demography should, in my opinion, play a role in determining happiness. In the future, it would be fascinating to investigate the impact of this characteristics on happiness, as well as track how the data changes over time.
+
+## References:
+-Changing World Happiness https://worldhappiness.report/ed/2019/changing-world-happiness/ <br>
+-Visualization & EDA on World Happiness Report by Merve ozgul https://rstudio-pubs-static.s3.amazonaws.com/464157_8443c5d697da405b91f41ada1e217064.html <br>
+
+
+
+
